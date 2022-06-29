@@ -9,8 +9,10 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,88 +27,70 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    TextView tv_joke;
-    Button btn_joke;
-    ImageView image_view;
-    Iterator<String> champs;
+
+    TextView tvTitle;
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tv_joke = findViewById(R.id.tv_joke);
-        btn_joke = findViewById(R.id.btn_joke);
-        image_view = findViewById(R.id.imageView);
-        btn_joke.setOnClickListener(new View.OnClickListener() {
+        List<Champ> champs = getListData();
+        tvTitle = (TextView) findViewById(R.id.tvTitle);
+        listView = (ListView) findViewById(R.id.lvChamps);
+        listView.setAdapter(new CustomListAdapter(this, champs));
+
+        // When the user clicks on the ListItem
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                getJSON();
-                //getImg();
+            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+                Object o = listView.getItemAtPosition(position);
+                Champ champ = (Champ) o;
+                Toast.makeText(MainActivity.this, "Selected :" + " " + champ, Toast.LENGTH_SHORT).show();
             }
         });
-        //Log.v("--volley", "Coucou");
     }
 
-    public void getJSON() {
+    public List<Champ> getListData() {
+        List<Champ> list = new ArrayList<Champ>();
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.INTERNET}, 1);
-            return;
+            list.add(new Champ("Kayn"));
+            return list;
         }
 
-
         String url = "http://ddragon.leagueoflegends.com/cdn/12.12.1/data/en_US/champion.json";
-        RequestQueue queue = Volley.newRequestQueue(this);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
                     response = response.getJSONObject("data");
-                    champs = response.keys();
+                    Iterator<String> iteratorChamps = response.keys();
+                    while (iteratorChamps.hasNext()) {
+                        list.add(new Champ(iteratorChamps.next()));
+                    }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.v("--error", "Error : " + e.toString());
                 }
-                while (champs.hasNext()) {
-                    Log.v("--champs", champs.next());
-                }
-                tv_joke.setText(response.toString());
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                tv_joke.setText("Error: " + error.toString());
-            }
-        });
-        queue.add(jsonObjectRequest);
-    }
-
-    public void getImg() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.INTERNET}, 1);
-            return;
-        }
-
-        String url = "http://ddragon.leagueoflegends.com/cdn/12.12.1/img/champion/Aatrox.png";
-        RequestQueue queue = Volley.newRequestQueue(this);
-        int maxWidth = 1000;
-        int maxHeight = 1000;
-
-        ImageRequest imageRequest = new ImageRequest(url, new Response.Listener<Bitmap>() {
-            @Override
-            public void onResponse(Bitmap response) {
-                image_view.setImageBitmap(response);
-            }
-        }, maxWidth, maxHeight, ImageView.ScaleType.CENTER, null, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, ""+error, Toast.LENGTH_LONG).show();
+                Log.v("--error", "Erreur requête images : " + error.toString());
+                tvTitle.setText("Erreur requête images : " + error.toString());
             }
         });
 
-        queue.add(imageRequest);
+        SingletonRequestQueue.getInstance(this).addToRequestQueue(jsonObjectRequest);
+
+        return list;
     }
 }

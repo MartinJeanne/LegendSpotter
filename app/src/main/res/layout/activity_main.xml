@@ -12,9 +12,16 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_joke"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Button" />
 
             <TextView
                 android:id="@+id/tv_joke"
@@ -23,12 +30,10 @@
                 android:layout_weight="1"
                 android:text="TextView" />
 
-            <Button
-                android:id="@+id/btn_joke"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Button" />
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="464dp"/>
 
         </LinearLayout>
 

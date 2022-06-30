@@ -4,25 +4,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView tvTitle;
     ListView listView;
+    CustomListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +38,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         List<Champ> champs = getListData();
-        tvTitle = (TextView) findViewById(R.id.tvTitle);
-        listView = (ListView) findViewById(R.id.lvChamps);
-        listView.setAdapter(new CustomListAdapter(this, champs));
+        tvTitle = findViewById(R.id.tvTitle);
+        listView = findViewById(R.id.lvChamps);
+        adapter = new CustomListAdapter(this, champs);
+        listView.setAdapter(adapter);
 
         // When the user clicks on the ListItem
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -53,12 +50,15 @@ public class MainActivity extends AppCompatActivity {
                 Object o = listView.getItemAtPosition(position);
                 Champ champ = (Champ) o;
                 Toast.makeText(MainActivity.this, "Selected :" + " " + champ, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, ChampionActivity.class);
+                intent.putExtra("champName", champ.getName());
+                startActivity(intent);
             }
         });
     }
 
     public List<Champ> getListData() {
-        List<Champ> list = new ArrayList<Champ>();
+        List<Champ> list = new ArrayList<>();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.INTERNET}, 1);
@@ -77,15 +77,16 @@ public class MainActivity extends AppCompatActivity {
                     while (iteratorChamps.hasNext()) {
                         list.add(new Champ(iteratorChamps.next()));
                     }
+                    adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
-                    Log.v("--error", "Error : " + e.toString());
+                    Log.v("--error", "Error : " + e);
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.v("--error", "Erreur requête images : " + error.toString());
-                tvTitle.setText("Erreur requête images : " + error.toString());
+                tvTitle.setText("Erreur requête images : " + error);
             }
         });
 

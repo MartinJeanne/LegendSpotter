@@ -11,12 +11,11 @@
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="All champion of  League of Legends :"
+        android:layout_marginTop="6dp"
+        android:text="Personnages de League of Legends :"
         android:textSize="20sp"
         app:layout_constraintLeft_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="6dp"
-        android:layout_marginStart="12dp"/>
+        app:layout_constraintTop_toTopOf="parent" />
     <ListView
         android:id="@+id/lvChamps"
         android:layout_width="0dp"

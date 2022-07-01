@@ -55,8 +55,18 @@
         android:layout_width="300px"
         android:layout_height="300px"
         android:layout_marginTop="208px"
-        android:progressTint="#DD1111"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/ivChampImg"
         app:layout_constraintTop_toTopOf="@+id/ivChampImg" />
+
+    <TextView
+        android:id="@+id/tvInfoClickImg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Cliquez sur l'image !"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="@+id/ivChampImg"
+        app:layout_constraintEnd_toEndOf="@+id/ivChampImg"
+        app:layout_constraintStart_toStartOf="@+id/ivChampImg" />
 </androidx.constraintlayout.widget.ConstraintLayout>

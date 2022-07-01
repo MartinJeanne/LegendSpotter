@@ -35,6 +35,7 @@ public class ChampionActivity extends AppCompatActivity {
     TextView tvNumSkin;
     ImageView ivChampImg;
     ProgressBar pbLoadSpinner;
+    TextView tvInfoClickImg;
     String champName;
     ArrayList<Integer> skinsNumber = new ArrayList<Integer>();
     int skinsIterator = 0;
@@ -47,6 +48,7 @@ public class ChampionActivity extends AppCompatActivity {
         tvChampName = findViewById(R.id.tvChampName);
         tvChampSummary = findViewById(R.id.tvChampSummary);
         pbLoadSpinner = findViewById(R.id.pbLoadSpinner);
+        tvInfoClickImg = findViewById(R.id.tvInfoClickImg);
         tvNumSkin = findViewById(R.id.tvNumSkin);
         tvNumSkin.setOnClickListener(new TextView.OnClickListener() {
             @Override
@@ -63,6 +65,12 @@ public class ChampionActivity extends AppCompatActivity {
         champName = intent.getStringExtra("champName");
         tvChampName.setText(champName);
 
+        // Requests
+        loadInfo();
+        loadImg(skinsIterator);
+    }
+
+    private void loadInfo() {
         String champInfoUrl = "http://ddragon.leagueoflegends.com/cdn/12.12.1/data/fr_FR/champion/" + champName + ".json";
 
         JsonObjectRequest champInfo = new JsonObjectRequest(Request.Method.GET, champInfoUrl, null, new Response.Listener<JSONObject>() {
@@ -85,12 +93,11 @@ public class ChampionActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Log.v("--error", "Erreur requête info champion : " + error.toString());
             }
         });
 
         SingletonRequestQueue.getInstance(this).addToRequestQueue(champInfo);
-        loadImg(skinsIterator);
     }
 
     private void loadImg(int skinNumber) {
@@ -102,10 +109,10 @@ public class ChampionActivity extends AppCompatActivity {
                 ivChampImg.setImageBitmap(response);
                 pbLoadSpinner.setVisibility(View.INVISIBLE);
             }
-        }, 3000, 3000, ImageView.ScaleType.CENTER, null, new Response.ErrorListener() {
+        }, 2000, 2000, ImageView.ScaleType.CENTER, null, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.v("--error", "Erreur requête images : " + error.toString());
+                Log.v("--error", "Erreur requête image : " + error.toString());
             }
         });
 
@@ -113,6 +120,7 @@ public class ChampionActivity extends AppCompatActivity {
     }
 
     private void switchSkin() {
+        if (tvInfoClickImg.getVisibility() == View.VISIBLE) tvInfoClickImg.setVisibility(View.INVISIBLE);
         pbLoadSpinner.setVisibility(View.VISIBLE);
         if (skinsIterator + 1 < skinsNumber.size()) skinsIterator++;
         else skinsIterator = 0;

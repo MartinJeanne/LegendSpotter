@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -33,6 +34,7 @@ public class ChampionActivity extends AppCompatActivity {
     TextView tvChampSummary;
     TextView tvNumSkin;
     ImageView ivChampImg;
+    ProgressBar pbLoadSpinner;
     String champName;
     ArrayList<Integer> skinsNumber = new ArrayList<Integer>();
     int skinsIterator = 0;
@@ -44,6 +46,7 @@ public class ChampionActivity extends AppCompatActivity {
 
         tvChampName = findViewById(R.id.tvChampName);
         tvChampSummary = findViewById(R.id.tvChampSummary);
+        pbLoadSpinner = findViewById(R.id.pbLoadSpinner);
         tvNumSkin = findViewById(R.id.tvNumSkin);
         tvNumSkin.setOnClickListener(new TextView.OnClickListener() {
             @Override
@@ -97,6 +100,7 @@ public class ChampionActivity extends AppCompatActivity {
             @Override
             public void onResponse(Bitmap response) {
                 ivChampImg.setImageBitmap(response);
+                pbLoadSpinner.setVisibility(View.INVISIBLE);
             }
         }, 3000, 3000, ImageView.ScaleType.CENTER, null, new Response.ErrorListener() {
             @Override
@@ -109,6 +113,7 @@ public class ChampionActivity extends AppCompatActivity {
     }
 
     private void switchSkin() {
+        pbLoadSpinner.setVisibility(View.VISIBLE);
         if (skinsIterator + 1 < skinsNumber.size()) skinsIterator++;
         else skinsIterator = 0;
         loadImg(skinsNumber.get(skinsIterator));

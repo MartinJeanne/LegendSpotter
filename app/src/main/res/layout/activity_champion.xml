@@ -9,7 +9,7 @@
     <ImageView
         android:id="@+id/ivChampImg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="717px"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -49,4 +49,14 @@
         android:text="Style :"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ivChampImg" />
+
+    <ProgressBar
+        android:id="@+id/pbLoadSpinner"
+        android:layout_width="300px"
+        android:layout_height="300px"
+        android:layout_marginTop="208px"
+        android:progressTint="#DD1111"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/ivChampImg"
+        app:layout_constraintTop_toTopOf="@+id/ivChampImg" />
 </androidx.constraintlayout.widget.ConstraintLayout>

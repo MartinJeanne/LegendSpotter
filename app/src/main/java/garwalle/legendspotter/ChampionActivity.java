@@ -1,18 +1,20 @@
 package garwalle.legendspotter;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -25,8 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class ChampionActivity extends AppCompatActivity {
 
@@ -36,6 +36,7 @@ public class ChampionActivity extends AppCompatActivity {
     ImageView ivChampImg;
     ProgressBar pbLoadSpinner;
     TextView tvInfoClickImg;
+    Button btAddToFavorite;
     String champName;
     ArrayList<Integer> skinsNumber = new ArrayList<Integer>();
     int skinsIterator = 0;
@@ -59,6 +60,29 @@ public class ChampionActivity extends AppCompatActivity {
         ivChampImg.setOnClickListener(new ImageView.OnClickListener() {
             @Override
             public void onClick(View view) { switchSkin(); }
+        });
+
+        btAddToFavorite = findViewById(R.id.btAddToFavorite);
+        btAddToFavorite.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DbHelper dbHelper = new DbHelper(ChampionActivity.this);
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                db.beginTransaction();
+                Cursor cursor = db.rawQuery("SELECT * FROM favoriteChamp WHERE name = ?", new String[] {champName});
+                if (cursor.getCount() > 0) {
+                    db.execSQL("DELETE FROM favoriteChamp WHERE name = '" + champName + "';");
+                    Toast.makeText(ChampionActivity.this, "Supprimé des favoris !", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    db.execSQL("INSERT INTO favoriteChamp (name) VALUES ('" + champName + "');");
+                    Toast.makeText(ChampionActivity.this, "Ajouté aux favoris !", Toast.LENGTH_SHORT).show();
+                }
+                cursor.close();
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                db.close();
+            }
         });
 
         Intent intent = getIntent();

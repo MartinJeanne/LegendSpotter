@@ -6,11 +6,14 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     TextView tvTitle;
     ListView listView;
     CustomListAdapter adapter;
+    Button showFavorites;
+    boolean favoritesShowed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,42 @@ public class MainActivity extends AppCompatActivity {
 
         tvTitle = findViewById(R.id.tvTitle);
         listView = findViewById(R.id.lvChamps);
+        showFavorites = findViewById(R.id.showFavorites);
+        showFavorites.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (favoritesShowed == false) {
+                    DbHelper dbHelper = new DbHelper(MainActivity.this);
+                    SQLiteDatabase db = dbHelper.getWritableDatabase();
+                    db.beginTransaction();
+                    Cursor cursor = db.rawQuery("SELECT * FROM favoriteChamp", null);
+                    if (cursor.getCount() > 0) {
+                        List<Champ> champs = new ArrayList<Champ>();
+                        final int nameIndex = cursor.getColumnIndex("name");
+                        while (cursor.moveToNext()) {
+                            champs.add(new Champ(cursor.getString(nameIndex)));
+                        }
+                        adapter = new CustomListAdapter(MainActivity.this, champs);
+                        listView.setAdapter(adapter);
+                        showFavorites.setText("Montrer tous les champions");
+                        favoritesShowed = true;
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this, "Pas de favoris !", Toast.LENGTH_SHORT).show();
+                    }
+                    cursor.close();
+                    db.setTransactionSuccessful();
+                    db.endTransaction();
+                    db.close();
+                }
+                else {
+                    ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
+                    getChamps.execute();
+                    showFavorites.setText("Montrer vos favoris");
+                    favoritesShowed = false;
+                }
+            }
+        });
 
         ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
         getChamps.execute();
@@ -69,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             List<Champ> champs = new ArrayList<Champ>();
-            String url = "http://ddragon.leagueoflegends.com/cdn/12.12.1/data/en_US/champion.json";
+            String url = "http://ddragon.leagueoflegends.com/cdn/12.12.1/data/fr_FR/champion.json";
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                 @Override

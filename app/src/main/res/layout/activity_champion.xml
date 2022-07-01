@@ -70,13 +70,13 @@
         app:layout_constraintEnd_toEndOf="@+id/ivChampImg"
         app:layout_constraintStart_toStartOf="@+id/ivChampImg" />
 
-    <Button
+    <ImageButton
         android:id="@+id/btAddToFavorite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:text="Favoris"
-        app:layout_constraintBottom_toTopOf="@+id/tvChampSummary"
+        android:layout_marginStart="8dp"
         app:layout_constraintStart_toEndOf="@+id/tvChampName"
-        app:layout_constraintTop_toBottomOf="@+id/ivChampImg" />
+        app:layout_constraintTop_toBottomOf="@+id/ivChampImg"
+        app:srcCompat="@android:drawable/btn_star_big_off" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

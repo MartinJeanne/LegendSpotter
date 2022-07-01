@@ -1,13 +1,15 @@
 package garwalle.legendspotter;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,7 +38,29 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     CustomListAdapter adapter;
     Button showFavorites;
+
     boolean favoritesShowed = false;
+    int positionItemClicked;
+
+    ActivityResultLauncher<Intent> launchChampionActivity = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // Si les favoris sont affichés et qu'un favoris a été enlevé, on supprime le favoris de la listView
+                        if (favoritesShowed) {
+                            boolean favoriteDeleted = result.getData().getBooleanExtra("favoriteDeleted", false);
+                            if (favoriteDeleted) {
+                                adapter.deleteItem(positionItemClicked);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    } else if(result.getResultCode() == RESULT_CANCELED) {
+                        Toast.makeText(MainActivity.this, "Une erreur est survenue", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,15 +75,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (favoritesShowed == false) {
                     DbHelper dbHelper = new DbHelper(MainActivity.this);
-                    SQLiteDatabase db = dbHelper.getWritableDatabase();
-                    db.beginTransaction();
-                    Cursor cursor = db.rawQuery("SELECT * FROM favoriteChamp", null);
-                    if (cursor.getCount() > 0) {
-                        List<Champ> champs = new ArrayList<Champ>();
-                        final int nameIndex = cursor.getColumnIndex("name");
-                        while (cursor.moveToNext()) {
-                            champs.add(new Champ(cursor.getString(nameIndex)));
-                        }
+                    List<Champ> champs = dbHelper.getFavoritesChamp();
+                    if (champs.size() > 0) {
                         adapter = new CustomListAdapter(MainActivity.this, champs);
                         listView.setAdapter(adapter);
                         showFavorites.setText("Montrer tous les champions");
@@ -68,35 +85,31 @@ public class MainActivity extends AppCompatActivity {
                     else {
                         Toast.makeText(MainActivity.this, "Pas de favoris !", Toast.LENGTH_SHORT).show();
                     }
-                    cursor.close();
-                    db.setTransactionSuccessful();
-                    db.endTransaction();
-                    db.close();
                 }
                 else {
                     ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
                     getChamps.execute();
-                    showFavorites.setText("Montrer vos favoris");
+                    showFavorites.setText("Montrer les favoris");
                     favoritesShowed = false;
                 }
             }
         });
 
-        ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
-        getChamps.execute();
-
-        // When the user clicks on the ListItem
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+                positionItemClicked = position;
                 Object o = listView.getItemAtPosition(position);
                 Champ champ = (Champ) o;
-                //Toast.makeText(MainActivity.this, "Selected :" + " " + champ, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, ChampionActivity.class);
                 intent.putExtra("champName", champ.getName());
-                startActivity(intent);
+                launchChampionActivity.launch(intent);
             }
         });
+
+        // Affiche tous les champions
+        ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
+        getChamps.execute();
     }
 
     private class ChampsListAsyncTask extends AsyncTask<Void, Void, List<Champ>> {

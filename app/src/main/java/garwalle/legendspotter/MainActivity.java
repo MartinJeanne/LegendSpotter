@@ -70,41 +70,35 @@ public class MainActivity extends AppCompatActivity {
         tvTitle = findViewById(R.id.tvTitle);
         listView = findViewById(R.id.lvChamps);
         showFavorites = findViewById(R.id.showFavorites);
-        showFavorites.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (favoritesShowed == false) {
-                    DbHelper dbHelper = new DbHelper(MainActivity.this);
-                    List<Champ> champs = dbHelper.getFavoritesChamp();
-                    if (champs.size() > 0) {
-                        adapter = new CustomListAdapter(MainActivity.this, champs);
-                        listView.setAdapter(adapter);
-                        showFavorites.setText("Montrer tous les champions");
-                        favoritesShowed = true;
-                    }
-                    else {
-                        Toast.makeText(MainActivity.this, "Pas de favoris !", Toast.LENGTH_SHORT).show();
-                    }
+        showFavorites.setOnClickListener(view -> {
+            if (!favoritesShowed) {
+                DbHelper dbHelper = new DbHelper(MainActivity.this);
+                List<Champ> champs = dbHelper.getFavoritesChamp();
+                if (champs.size() > 0) {
+                    adapter = new CustomListAdapter(MainActivity.this, champs);
+                    listView.setAdapter(adapter);
+                    showFavorites.setText("Montrer tous les champions");
+                    favoritesShowed = true;
                 }
                 else {
-                    ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
-                    getChamps.execute();
-                    showFavorites.setText("Montrer les favoris");
-                    favoritesShowed = false;
+                    Toast.makeText(MainActivity.this, "Pas de favoris !", Toast.LENGTH_SHORT).show();
                 }
+            }
+            else {
+                ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
+                getChamps.execute();
+                showFavorites.setText("Montrer les favoris");
+                favoritesShowed = false;
             }
         });
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-                positionItemClicked = position;
-                Object o = listView.getItemAtPosition(position);
-                Champ champ = (Champ) o;
-                Intent intent = new Intent(MainActivity.this, ChampionActivity.class);
-                intent.putExtra("champName", champ.getName());
-                launchChampionActivity.launch(intent);
-            }
+        listView.setOnItemClickListener((a, v, position, id) -> {
+            positionItemClicked = position;
+            Object o = listView.getItemAtPosition(position);
+            Champ champ = (Champ) o;
+            Intent intent = new Intent(MainActivity.this, ChampionActivity.class);
+            intent.putExtra("champName", champ.getName());
+            launchChampionActivity.launch(intent);
         });
 
         // Affiche tous les champions
@@ -122,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
-            List<Champ> champs = new ArrayList<Champ>();
+            List<Champ> champs = new ArrayList<>();
             String url = "http://ddragon.leagueoflegends.com/cdn/12.12.1/data/fr_FR/champion.json";
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {

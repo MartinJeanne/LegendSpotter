@@ -36,7 +36,7 @@ public class ChampionActivity extends AppCompatActivity {
     ImageButton btAddToFavorite;
 
     String champName;
-    ArrayList<Integer> skinsNumber = new ArrayList<Integer>();
+    ArrayList<Integer> skinsNumber = new ArrayList<>();
     int skinsIterator = 0;
     boolean originalFavorite;
     boolean currentFavorite;
@@ -53,33 +53,24 @@ public class ChampionActivity extends AppCompatActivity {
         pbLoadSpinner = findViewById(R.id.pbLoadSpinner);
         tvInfoClickImg = findViewById(R.id.tvInfoClickImg);
         tvNumSkin = findViewById(R.id.tvNumSkin);
-        tvNumSkin.setOnClickListener(new TextView.OnClickListener() {
-            @Override
-            public void onClick(View view) { switchSkin(); }
-        });
+        tvNumSkin.setOnClickListener(view -> switchSkin());
 
         ivChampImg = findViewById(R.id.ivChampImg);
-        ivChampImg.setOnClickListener(new ImageView.OnClickListener() {
-            @Override
-            public void onClick(View view) { switchSkin(); }
-        });
+        ivChampImg.setOnClickListener(view -> switchSkin());
 
         btAddToFavorite = findViewById(R.id.btAddToFavorite);
-        btAddToFavorite.setOnClickListener(new ImageButton.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DbHelper dbHelper = new DbHelper(ChampionActivity.this);
-                // On ajoute le champion aux favoris, si l'est déjà on l'enlève
-                currentFavorite = dbHelper.switchFavorite(champName);
-                // En fonction du résultat du "switch" précédent, on informe l'utilisateur
-                if (currentFavorite) {
-                    btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_on);
-                    Toast.makeText(ChampionActivity.this, champName + " ajouté aux favoris !", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_off);
-                    Toast.makeText(ChampionActivity.this, champName + " supprimé des favoris !", Toast.LENGTH_SHORT).show();
-                }
+        btAddToFavorite.setOnClickListener(view -> {
+            DbHelper dbHelper = new DbHelper(ChampionActivity.this);
+            // On ajoute le champion aux favoris, si l'est déjà on l'enlève
+            currentFavorite = dbHelper.switchFavorite(champName);
+            // En fonction du résultat du "switch" précédent, on informe l'utilisateur
+            if (currentFavorite) {
+                btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+                Toast.makeText(ChampionActivity.this, champName + " ajouté aux favoris !", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_off);
+                Toast.makeText(ChampionActivity.this, champName + " supprimé des favoris !", Toast.LENGTH_SHORT).show();
             }
         });
 

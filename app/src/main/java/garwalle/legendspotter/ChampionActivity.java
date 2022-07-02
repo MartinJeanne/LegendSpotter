@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class ChampionActivity extends AppCompatActivity {
 
@@ -88,8 +89,7 @@ public class ChampionActivity extends AppCompatActivity {
             if (currentFavorite) {
                 btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_on);
                 Toast.makeText(ChampionActivity.this, champName + " ajouté aux favoris !", Toast.LENGTH_SHORT).show();
-            }
-            else {
+            } else {
                 btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_off);
                 Toast.makeText(ChampionActivity.this, champName + " supprimé des favoris !", Toast.LENGTH_SHORT).show();
             }
@@ -124,15 +124,24 @@ public class ChampionActivity extends AppCompatActivity {
                     JSONArray tagsJSON = champJSON.getJSONArray("tags");
                     JSONObject characteristic = champJSON.getJSONObject("info");
 
-                    for (int i=0; i < skins.length(); i++) {
+                    for (int i = 0; i < skins.length(); i++) {
                         int skin = skins.getJSONObject(i).getInt("num");
                         skinsNumber.add(skin);
                     }
 
-                    for (int i=0; i < tagsJSON.length(); i++) {
+                    for (int i = 0; i < tagsJSON.length(); i++) {
                         String text;
-                        if (i == 0) text = tvRole.getText() + " " + tagsJSON.getString(i);
-                        else text = tvRole.getText() + ", " + tagsJSON.getString(i);
+                        String tag = tagsJSON.getString(i);
+                        switch (tag) {
+                            case "Marksman": tag = "Tireur";
+                                break;
+                            case "Fighter": tag = "Combattant";
+                                break;
+                            case "Tank": tag = "Défenseur";
+                                break;
+                        }
+                        if (i == 0) text = tag;
+                        else text = tvRole.getText() + ", " + tag;
                         tvRole.setText(text);
                     }
 
@@ -176,7 +185,8 @@ public class ChampionActivity extends AppCompatActivity {
     }
 
     private void switchSkin() {
-        if (tvInfoClickImg.getVisibility() == View.VISIBLE) tvInfoClickImg.setVisibility(View.INVISIBLE);
+        if (tvInfoClickImg.getVisibility() == View.VISIBLE)
+            tvInfoClickImg.setVisibility(View.INVISIBLE);
         pbLoadSpinner.setVisibility(View.VISIBLE);
         if (skinsIterator + 1 < skinsNumber.size()) skinsIterator++;
         else skinsIterator = 0;

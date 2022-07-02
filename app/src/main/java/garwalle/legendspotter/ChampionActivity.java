@@ -42,6 +42,7 @@ public class ChampionActivity extends AppCompatActivity {
     ProgressBar pbDefense;
     ProgressBar pbMagic;
     ProgressBar pbDifficulty;
+    TextView tvNoStat;
 
     String champName;
     ArrayList<Integer> skinsNumber = new ArrayList<>();
@@ -61,6 +62,7 @@ public class ChampionActivity extends AppCompatActivity {
         pbLoadSpinner = findViewById(R.id.pbLoadSpinner);
         tvInfoClickImg = findViewById(R.id.tvInfoClickImg);
         tvRole = findViewById(R.id.tvRole);
+        tvNoStat = findViewById(R.id.tvNoStat);
 
         pbAttack = findViewById(R.id.pbAttack);
         pbAttack.setProgressTintList(ColorStateList.valueOf(Color.RED));
@@ -122,7 +124,7 @@ public class ChampionActivity extends AppCompatActivity {
                     lore = "Histoire : \n" + champJSON.getString("lore");
                     JSONArray skins = champJSON.getJSONArray("skins");
                     JSONArray tagsJSON = champJSON.getJSONArray("tags");
-                    JSONObject characteristic = champJSON.getJSONObject("info");
+                    JSONObject stats = champJSON.getJSONObject("info");
 
                     for (int i = 0; i < skins.length(); i++) {
                         int skin = skins.getJSONObject(i).getInt("num");
@@ -145,10 +147,12 @@ public class ChampionActivity extends AppCompatActivity {
                         tvRole.setText(text);
                     }
 
-                    pbAttack.setProgress(characteristic.getInt("attack"));
-                    pbDefense.setProgress(characteristic.getInt("defense"));
-                    pbMagic.setProgress(characteristic.getInt("magic"));
-                    pbDifficulty.setProgress(characteristic.getInt("difficulty"));
+                    // L'attaque d'un personnage ne peut pas être égale à 0, si c'est le cas c'est que l'API nous a pas fourni de stats pour ce personnage
+                    if (stats.getInt("attack") <= 0) tvNoStat.setVisibility(View.VISIBLE);
+                    pbAttack.setProgress(stats.getInt("attack"));
+                    pbDefense.setProgress(stats.getInt("defense"));
+                    pbMagic.setProgress(stats.getInt("magic"));
+                    pbDifficulty.setProgress(stats.getInt("difficulty"));
                 } catch (JSONException e) {
                     Log.v("--error", "Error : " + e);
                 }

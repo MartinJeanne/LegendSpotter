@@ -3,7 +3,9 @@ package garwalle.legendspotter;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +36,11 @@ public class ChampionActivity extends AppCompatActivity {
     ProgressBar pbLoadSpinner;
     TextView tvInfoClickImg;
     ImageButton btAddToFavorite;
+    TextView tvRole;
+    ProgressBar pbAttack;
+    ProgressBar pbDefense;
+    ProgressBar pbMagic;
+    ProgressBar pbDifficulty;
 
     String champName;
     ArrayList<Integer> skinsNumber = new ArrayList<>();
@@ -52,6 +59,20 @@ public class ChampionActivity extends AppCompatActivity {
         tvChampSummary = findViewById(R.id.tvChampSummary);
         pbLoadSpinner = findViewById(R.id.pbLoadSpinner);
         tvInfoClickImg = findViewById(R.id.tvInfoClickImg);
+        tvRole = findViewById(R.id.tvRole);
+
+        pbAttack = findViewById(R.id.pbAttack);
+        pbAttack.setProgressTintList(ColorStateList.valueOf(Color.RED));
+
+        pbDefense = findViewById(R.id.pbDefense);
+        pbDefense.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+
+        pbMagic = findViewById(R.id.pbMagic);
+        pbMagic.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+
+        pbDifficulty = findViewById(R.id.pbDifficulty);
+        pbDifficulty.setProgressTintList(ColorStateList.valueOf(Color.MAGENTA));
+
         tvNumSkin = findViewById(R.id.tvNumSkin);
         tvNumSkin.setOnClickListener(view -> switchSkin());
 
@@ -84,6 +105,7 @@ public class ChampionActivity extends AppCompatActivity {
         // Affiche une étoile rempli si le champion est en favoris
         DbHelper dbHelper = new DbHelper(ChampionActivity.this);
         originalFavorite = dbHelper.isChampFavorite(champName);
+        currentFavorite = originalFavorite;
         if (originalFavorite) btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_on);
         else btAddToFavorite.setImageResource(android.R.drawable.btn_star_big_off);
     }
@@ -96,12 +118,28 @@ public class ChampionActivity extends AppCompatActivity {
             public void onResponse(JSONObject response) {
                 String lore = "Pas de description.";
                 try {
-                    lore = response.getJSONObject("data").getJSONObject(champName).getString("lore");
-                    JSONArray skins = response.getJSONObject("data").getJSONObject(champName).getJSONArray("skins");
+                    JSONObject champJSON = response.getJSONObject("data").getJSONObject(champName);
+                    lore = "Histoire : \n" + champJSON.getString("lore");
+                    JSONArray skins = champJSON.getJSONArray("skins");
+                    JSONArray tagsJSON = champJSON.getJSONArray("tags");
+                    JSONObject characteristic = champJSON.getJSONObject("info");
+
                     for (int i=0; i < skins.length(); i++) {
                         int skin = skins.getJSONObject(i).getInt("num");
                         skinsNumber.add(skin);
                     }
+
+                    for (int i=0; i < tagsJSON.length(); i++) {
+                        String text;
+                        if (i == 0) text = tvRole.getText() + " " + tagsJSON.getString(i);
+                        else text = tvRole.getText() + ", " + tagsJSON.getString(i);
+                        tvRole.setText(text);
+                    }
+
+                    pbAttack.setProgress(characteristic.getInt("attack"));
+                    pbDefense.setProgress(characteristic.getInt("defense"));
+                    pbMagic.setProgress(characteristic.getInt("magic"));
+                    pbDifficulty.setProgress(characteristic.getInt("difficulty"));
                 } catch (JSONException e) {
                     Log.v("--error", "Error : " + e);
                 }

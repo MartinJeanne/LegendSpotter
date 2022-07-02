@@ -13,8 +13,9 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,9 +36,8 @@ public class MainActivity extends AppCompatActivity {
     TextView tvTitle;
     ListView listView;
     CustomListAdapter adapter;
-    Button showFavorites;
+    Switch swShowFavorites;
 
-    boolean favoritesShowed = false;
     int positionItemClicked;
 
     ActivityResultLauncher<Intent> launchChampionActivity = registerForActivityResult(
@@ -47,14 +47,15 @@ public class MainActivity extends AppCompatActivity {
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == RESULT_OK) {
                         // Si les favoris sont affichés et qu'un favoris a été enlevé, on supprime le favoris de la listView
-                        if (favoritesShowed) {
+                        if (swShowFavorites.isChecked()) {
                             boolean favoriteDeleted = result.getData().getBooleanExtra("favoriteDeleted", false);
                             if (favoriteDeleted) {
                                 adapter.deleteItem(positionItemClicked);
+                                if (adapter.getCount() == 0) swShowFavorites.setChecked(false);
                                 adapter.notifyDataSetChanged();
                             }
                         }
-                    } else if(result.getResultCode() == RESULT_CANCELED) {
+                    } else if (result.getResultCode() == RESULT_CANCELED) {
                         Toast.makeText(MainActivity.this, "Une erreur est survenue", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -67,26 +68,24 @@ public class MainActivity extends AppCompatActivity {
 
         tvTitle = findViewById(R.id.tvTitle);
         listView = findViewById(R.id.lvChamps);
-        showFavorites = findViewById(R.id.showFavorites);
-        showFavorites.setOnClickListener(view -> {
-            if (!favoritesShowed) {
-                DbHelper dbHelper = new DbHelper(MainActivity.this);
-                List<Champ> champs = dbHelper.getFavoritesChamp();
-                if (champs.size() > 0) {
-                    adapter = new CustomListAdapter(MainActivity.this, champs);
-                    listView.setAdapter(adapter);
-                    showFavorites.setText("Montrer tous les champions");
-                    favoritesShowed = true;
+        swShowFavorites = findViewById(R.id.swShowFavorites);
+        swShowFavorites.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    DbHelper dbHelper = new DbHelper(MainActivity.this);
+                    List<Champ> champs = dbHelper.getFavoritesChamp();
+                    if (champs.size() > 0) {
+                        adapter = new CustomListAdapter(MainActivity.this, champs);
+                        listView.setAdapter(adapter);
+                    } else {
+                        swShowFavorites.setChecked(false);
+                        Toast.makeText(MainActivity.this, "Pas de favoris !", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
+                    getChamps.execute();
                 }
-                else {
-                    Toast.makeText(MainActivity.this, "Pas de favoris !", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else {
-                ChampsListAsyncTask getChamps = new ChampsListAsyncTask();
-                getChamps.execute();
-                showFavorites.setText("Montrer les favoris");
-                favoritesShowed = false;
             }
         });
 
@@ -127,15 +126,12 @@ public class MainActivity extends AppCompatActivity {
                         }
                         adapter.notifyDataSetChanged();
                     } catch (JSONException e) {
-                        Log.v("--error", "Error : " + e.toString());
+                        Log.v("--error", "Error : " + e);
                     }
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.v("--error", "Erreur requête images : " + error.toString());
-                    tvTitle.setText("Erreur requête images : " + error.toString());
-                }
+            }, error -> {
+                Log.v("--error", "Erreur requête images : " + error.toString());
+                tvTitle.setText("Erreur requête images : " + error);
             });
 
             SingletonRequestQueue.getInstance(MainActivity.this).addToRequestQueue(jsonObjectRequest);
